@@ -10,6 +10,17 @@ var {User} = require('./models/user')
 var app = express();
 const port = process.env.PORT || 3000;
 
+var handleFn = (id, res, callback) => {
+  if (! ObjectID.isValid(id)) {
+    res.status(404).send('ID not valid');
+  } else {
+    callback(id).then((todo) => {
+      if (!todo) res.status(404).send('ID not found');
+      else res.send({todo});
+    }).catch((e) => res.status(400).send());
+  }
+};
+
 app.use(bodyParser.json());
 
 app.post('/todos', (req, res) => {
@@ -38,6 +49,18 @@ app.get('/todos/:id', (req, res) => {
     res.status(404).send('ID not valid');
   } else {
     Todo.findById(id).then((todo) => {
+      if (!todo) res.status(404).send('ID not found');
+      else res.send({todo});
+    }).catch((e) => res.status(400).send());
+  }
+});
+
+app.delete('/todos/:id', (req, res) => {
+  var id = req.params.id;
+  if (! ObjectID.isValid(id)){
+    res.status(404).send('ID not valid');
+  } else {
+    Todo.findByIdAndRemove(id).then((todo) => {
       if (!todo) res.status(404).send('ID not found');
       else res.send({todo});
     }).catch((e) => res.status(400).send());
