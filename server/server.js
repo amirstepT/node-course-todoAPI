@@ -1,3 +1,20 @@
+require('./config/config');
+
+var env = process.env.NODE_ENV || 'development';
+var database;
+
+if (env === 'development') {
+  process.env.PORT = 3000;
+  database = 'TodoApp';
+} else if (env === 'test') {
+  process.env.PORT = 3000;
+  database = 'TodoAppTest';
+} else { // production heroku
+  database = 'TodoApp';
+}
+process.env.MONGODB_URI = `mongodb://amirstep:7orion!@cluster0-shard-00-00-c8f1h.mongodb.net:27017,cluster0-shard-00-01-c8f1h.mongodb.net:27017,cluster0-shard-00-02-c8f1h.mongodb.net:27017/${database}?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true`;
+//console.log('uri', process.env.MONGODB_URI);
+
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -9,7 +26,7 @@ var {User} = require('./models/user')
 
 
 var app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 var handleFn = (id, res, callback) => {
   if (! ObjectID.isValid(id)) {
@@ -74,6 +91,7 @@ app.patch('/todos/:id', (req, res) =>  {
   if (! ObjectID.isValid(id)){
     res.status(404).send('ID not valid');
   } else {
+
     if (_.isBoolean(body.completed) && body.completed){
       body.completedAt = new Date().getTime();
     } else {
