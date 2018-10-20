@@ -32,9 +32,11 @@ var UserSchema = new mongoose.Schema({
   }]
 });
 
-UserSchema.methods.toJSON = function () {
+UserSchema.methods.toJSON = function () { // we are overriding an existing function in mongoose
   var user = this;
   var userObject = user.toObject(); // taking mongoose 'user' and converting to regular object where only properties avail in doc exist
+                                    // user object is immutable and cannot be changed, added to etc.  converting it to a copy of an Object
+                                    // allows one to change it around if needed.
   return _.pick(userObject, ['_id', 'email']);
 };
 
@@ -47,6 +49,27 @@ UserSchema.methods.generateAuthToken = function () {
   return user.save().then( () => {
     return token;
   });
+};
+
+UserSchema.statics.findByToken = function (token) {
+  var User = this;
+  var decoded;
+
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch (e) {
+    // return new Promise((resolve, reject) => { // code below identical to commented out code
+    //   reject();
+    // });
+    return Promise.reject();
+  }
+
+  return User.findOne({
+    '_id': decoded._id,
+    'tokens.token': token,
+    'tokens.access': 'auth'
+  });
+
 };
 
 var User = mongoose.model('User', UserSchema);
