@@ -1,19 +1,19 @@
 require('./config/config');
 
-var env = process.env.NODE_ENV || 'development';
-var database;
-
-if (env === 'development') {
-  process.env.PORT = 3000;
-  database = 'TodoApp';
-} else if (env === 'test') {
-  process.env.PORT = 3000;
-  database = 'TodoAppTest';
-} else { // production heroku
-  database = 'TodoApp';
-}
-process.env.MONGODB_URI = `mongodb://amirstep:7orion!@cluster0-shard-00-00-c8f1h.mongodb.net:27017,cluster0-shard-00-01-c8f1h.mongodb.net:27017,cluster0-shard-00-02-c8f1h.mongodb.net:27017/${database}?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true`;
-//console.log('uri', process.env.MONGODB_URI);
+// var env = process.env.NODE_ENV || 'development';
+// var database;
+//
+// if (env === 'development') {
+//   process.env.PORT = 3000;
+//   database = 'TodoApp';
+// } else if (env === 'test') {
+//   process.env.PORT = 3000;
+//   database = 'TodoAppTest';
+// } else { // production heroku
+//   database = 'TodoApp';
+// }
+// process.env.MONGODB_URI = `mongodb://amirstep:7orion!@cluster0-shard-00-00-c8f1h.mongodb.net:27017,cluster0-shard-00-01-c8f1h.mongodb.net:27017,cluster0-shard-00-02-c8f1h.mongodb.net:27017/${database}?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true`;
+// //console.log('uri', process.env.MONGODB_URI);
 
 const _ = require('lodash');
 const express = require('express');
@@ -115,30 +115,20 @@ app.get('/users/me', authenticate, (req, res) => {
   res.send(req.user);
 });
 
+app.post('/users/login', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+
+  User.findByCredentials(body.email, body.password).then((user) => {
+    return user.generateAuthToken().then((token) => {
+      res.header('x-auth', token).send(user);
+    });
+  }).catch ((e) => {
+    res.status(400).send();
+  });
+});
+
 app.listen(port, () => {
   console.log(`Started on port ${port}`);
 });
 
 module.exports = {app};
-
-// var newTodo = new Todo({
-//   text: '  Eat this bicycle '
-// });
-
-// newTodo.save().then((doc) => {
-//   console.log('Saved todo', doc)
-// }, (e) => {
-//   console.log('Unable to save todo', e);
-// });
-//
-//
-//
-// var newUser = new User({
-//   email: ' john@facebook.com '
-// });
-//
-// newUser.save().then((doc) => {
-//   console.log('Saved user', doc)
-// }, (e) => {
-//   console.log('Unable to save user', e);
-// });

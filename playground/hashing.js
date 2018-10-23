@@ -16,8 +16,8 @@ bcrypt.compare(password, hashedPassword, (err, res) => {
   console.log(res);
 });
 
-var hash = SHA256(password).toString();
-console.log(hash);
+// var hash = SHA256(password).toString();
+// console.log(hash);
 
 
 //
